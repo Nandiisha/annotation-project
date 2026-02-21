@@ -1,75 +1,64 @@
 const express = require("express");
-console.log("IMAGES ROUTE LOADED");   // 👈 add this
 const router = express.Router();
-const pool = require("../db");
-const auth = require("../middleware/authMiddleware");
+const db = require("../db");
+const auth = require("../middleware/auth");
 
-
-
+/* ================= SAVE IMAGE ================= */
 router.post("/", auth, async (req, res) => {
-    try {
-      const { imageData, imageName } = req.body;
-  
-      
-      const existing = await pool.query(
-        "SELECT * FROM images WHERE image_name=$1 AND user_id=$2",
-        [imageName, req.user.id]
-      );
-  
-      if (existing.rows.length > 0) {
-        
-        return res.json(existing.rows[0]);
-      }
-  
-     
-      const result = await pool.query(
-        "INSERT INTO images (image_data, image_name, user_id) VALUES ($1,$2,$3) RETURNING *",
-        [imageData, imageName, req.user.id]
-      );
-  
-      res.json(result.rows[0]);
-  
-    } catch (err) {
-      console.log("IMAGE POST ERROR:", err);
-      res.status(500).send("Server error");
+  try {
+    const { image_data, image_name } = req.body;
+
+    if (!image_data) {
+      return res.status(400).json({ message: "No image data" });
     }
-  });
 
+    const result = await db.query(
+      `INSERT INTO images (image_data, image_name, user_id)
+       VALUES ($1,$2,$3)
+       RETURNING *`,
+      [image_data, image_name, req.user.id]
+    );
 
+    res.json(result.rows[0]);
 
+  } catch (err) {
+    console.log("IMAGE SAVE ERROR:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+/* ================= GET IMAGES ================= */
 router.get("/", auth, async (req, res) => {
   try {
-    const result = await pool.query(
-      "SELECT * FROM images WHERE user_id=$1 ORDER BY id DESC",
+    const result = await db.query(
+      `SELECT * FROM images
+       WHERE user_id=$1
+       ORDER BY id DESC`,
       [req.user.id]
     );
 
     res.json(result.rows);
+
   } catch (err) {
-    console.log("IMAGE GET ERROR:", err);
-    res.status(500).send("Server error");
+    console.log("FETCH IMAGE ERROR:", err);
+    res.status(500).json({ message: "Server error" });
   }
 });
 
+/* ================= DELETE IMAGE ================= */
 router.delete("/:id", auth, async (req, res) => {
   try {
-    const { id } = req.params;
-
-    await pool.query(
-      "DELETE FROM annotations WHERE image_id=$1 AND user_id=$2",
-      [id, req.user.id]
+    await db.query(
+      `DELETE FROM images WHERE id=$1 AND user_id=$2`,
+      [req.params.id, req.user.id]
     );
 
-   
-    await pool.query(
-      "DELETE FROM images WHERE id=$1 AND user_id=$2",
-      [id, req.user.id]
-    );
+    res.json({ message: "Deleted" });
 
-    res.json({ success: true });
   } catch (err) {
-    console.log("IMAGE DELETE ERROR:", err);
-    res.status(500).send("Server error");
+    console.log("DELETE IMAGE ERROR:", err);
+    res.status(500).json({ message: "Server error" });
   }
 });
+
 module.exports = router;
