@@ -44,7 +44,7 @@ router.post("/", auth, async (req, res) => {
 
   res.json(newAnnotation.rows[0]);
 });
-// UPDATE ANNOTATION
+
 
 router.put("/:id", auth, async (req, res) => {
   console.log("🔥 PUT ROUTE HIT", req.params.id);

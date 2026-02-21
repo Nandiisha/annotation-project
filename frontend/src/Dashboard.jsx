@@ -3,7 +3,7 @@ import React from "react";
 function Dashboard({ goCanvas, logout }) {
   return (
     <div style={page}>
-      {/* NAVBAR */}
+    
       <div style={navbar}>
         <h2 style={{ color: "white" }}>Image Annotation Tool</h2>
 
@@ -12,7 +12,7 @@ function Dashboard({ goCanvas, logout }) {
         </button>
       </div>
 
-      {/* CONTENT */}
+      
       <div style={content}>
         <div style={card}>
           <h1 style={{ color: "white", marginBottom: 10 }}>
@@ -32,7 +32,7 @@ function Dashboard({ goCanvas, logout }) {
   );
 }
 
-/* STYLES */
+
 
 const page = {
   minHeight: "100vh",
